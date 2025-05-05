@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+      http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd
+      http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.3.xsd">
+
+    <!-- #################################### Spring 的数据源和 MyBatis 整合配置文件 #################################### -->
+
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="username" value="root"/>
+        <property name="password" value="123456"/>
+        <property name="url" value="jdbc:mysql://127.0.0.1:3306/crm?useSSL=false&amp;useUnicode=true&amp;characterEncoding=UTF-8"/>
+    </bean>
+
+    <!-- ############ 使用 Spring 整合 Mybatis 框架需要 SqlSessionFactoryBean 和 MapperScannerConfigurer 这两个类 ############ -->
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+
+        <!-- 指定 MyBatis 的全局配置文件。如果 MyBatis 没有特殊的配置（比如别名等），configLocation 可以省去；否则不能省略-->
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+    </bean>
+
+    <!--
+        MapperScannerConfigurer 这个类，会扫描 com.bjpowernode.crm.settings.mapper 包下的接口
+        并为每个接口在 Spring 容器中创建一个代理对象
+        只要创建了 MapperScannerConfigurer 的 bean 对象，指定包下的 mapper 就会在 Spring 容器中有代理对象了
+    -->
+    <bean id="mapperScanner" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.bjpowernode.crm.settings.mapper,
+                                            com.bjpowernode.crm.workbench.mapper"/>
+
+
+        <!--
+            这里为什么用 value 为属性赋值，而不是用 ref 赋值？是因为 sqlSessionFactoryBeanName 这个属性
+            是一个 String 类型的属性，而不是 SqlSessionFactoryBean 类型的属性
+        -->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!-- 配置切面 -->
+    <aop:config>
+
+        <!--
+            * com.bjpowernode.crm..service.*.*(..) 匹配 service 包及其子包中的所有方法，不管这些方法的参数是什么，返回值是什么
+        -->
+        <aop:pointcut expression="execution(* com.bjpowernode.crm..service.*.*(..))" id="allMethodPointcut"/>
+
+        <!-- 对于切入点上的方法，应用 txAdvice 这个通知 -->
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="allMethodPointcut"/>
+    </aop:config>
+
+    <!-- 配置通知 -->
+    <!-- 指定事务管理器为 transactionManager -->
+    <tx:advice id="txAdvice" transaction-manager="transactionManager">
+        <tx:attributes>
+
+            <!--
+                对名称以 add 开头的方法应用事务管理
+                REQUIRED 表示如果当前方法已经存在一个事务，则使用当前事务；如果当前没有事务，则新建一个事务
+                rollback-for="Exception" 指定了在出现指定异常时，事务应该回滚
+            -->
+            <tx:method name="add*" propagation="REQUIRED" rollback-for="Exception"/>
+            <tx:method name="save*" propagation="REQUIRED" rollback-for="Exception"/>
+            <tx:method name="edit*" propagation="REQUIRED" rollback-for="Exception"/>
+            <tx:method name="update*" propagation="REQUIRED" rollback-for="Exception"/>
+            <tx:method name="delete*" propagation="REQUIRED" rollback-for="Exception"/>
+            <tx:method name="do*" propagation="REQUIRED" rollback-for="Exception"/>
+
+            <!--
+                read-only="true" 表示该方法的事务是只读的。比如说你要对 A 方法添加事务控制
+                只有当 A 方法是只读的时候，才能设置事务为只读的，这样做可以优化数据库性能
+            -->
+            <tx:method name="*" propagation="REQUIRED" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+</beans>

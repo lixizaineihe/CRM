@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<!-- #################################### MyBatis 的配置文件 #################################### -->
+
+<configuration>
+
+    <settings>
+        <!--
+            logImpl 属性用于配置日志的实现方式。STDOUT_LOGGING 是一种常见的日志输出选项
+            它将 MyBatis 的 SQL 执行日志、错误信息等打印到控制台，方便开发者调试和查看 SQL 执行过程
+        -->
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
+    </settings>
+
+    <!-- 为 com.bjpowernode.crm.model 包下的所有类都设定别名，别名为类名 -->
+    <typeAliases>
+        <package name="com.bjpowernode.crm.model"/>
+    </typeAliases>
+
+    <!-- 扫描 com.bjpowernode.crm.mapper 这个包下的所有接口，将它们注册为 Mapper -->
+    <mappers>
+        <package name="com.bjpowernode.crm.mapper"/>
+    </mappers>
+</configuration>

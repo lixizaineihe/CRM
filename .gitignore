@@ -1,0 +1,65 @@
+# 编译输出
+/target/
+bin/
+out/
+
+# IDE 配置文件
+*.idea/
+*.classpath
+*.project
+*.settings/
+.vscode/
+
+# 日志文件
+*.log
+
+# 操作系统生成的文件
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.swp
+*.bak
+
+# Maven
+.mvn/
+!/.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# 环境配置
+*.env
+*.local
+.env*
+
+# 依赖管理
+/node_modules/
+
+# Java 本地缓存
+*.class
+
+# 覆盖测试和报告
+jacoco.exec
+/coverage/
+
+# 本地数据库文件
+*.h2.*
+*.sqlite
+
+# 包管理器（如yarn）
+.yarn/
+.pnp.*
+
+# 包含自定义配置的密钥文件（可选）
+*.keystore
+
+# 操作系统回收站
+ehthumbs.db
+Desktop.ini
+
+# 你自己的自定义忽略规则
+# /my-local-folder/

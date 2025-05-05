@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/tx
+        http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/aop
+        http://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <!-- #################################### SpringMVC 的配置文件 #################################### -->
+
+    <!--
+        将对静态资源（图片、CSS 文件、JS 文件）请求交给默认 Servlet 处理，而非交给前端控制器 DispatcherServlet 处理
+        默认 Servlet 是 Tomcat 自带的，不用我们额外配置
+    -->
+    <mvc:default-servlet-handler />
+
+    <!-- 扫描指定包下的 Controller -->
+    <context:component-scan base-package="com.bjpowernode.crm.web.controller"/>
+    <context:component-scan base-package="com.bjpowernode.crm.settings.web.controller"/>
+    <context:component-scan base-package="com.bjpowernode.crm.workbench.web.controller"/>
+
+    <!-- 开启 SpringMVC 对注解的支持 -->
+    <mvc:annotation-driven/>
+
+    <!-- 配置视图解析器 -->
+    <bean id="viewResolver"
+          class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="prefix" value="/WEB-INF/pages/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <!--
+                因为我们在前面写代码发请求时，都是用的 页面所在路径/方法名 这种形式来命名的请求
+                这种规范命名的好处在这就体现出来了，我们可以通过这个规律来定义要拦截的请求
+
+                /settings/** 的意思是
+                拦截所有以 /settings/ 开头的请求，包括 /settings/ 子路径下的所有资源和接口
+                /settings/* 只能拦截 /settings/xxx 这种请求，再有更深的目录，比如 /settings/xxx/yyy 这种就拦截不了了
+                但是 /settings/** 就可以，请求有任意深度都可以
+            -->
+            <mvc:mapping path="/settings/**"/>
+            <mvc:mapping path="/workbench/**"/>
+
+            <!-- 打开服务器，让页面跳转到登录页面的这个请求不拦截 -->
+            <mvc:exclude-mapping path="/settings/qx/user/toLogin.do"/>
+            <!-- 登录请求不拦截 -->
+            <mvc:exclude-mapping path="/settings/qx/user/login.do"/>
+            <!-- 拦截器的实现类所在位置 -->
+            <bean class="com.bjpowernode.crm.settings.web.interceptor.LoginInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+    <!-- 配置文件上传解析器 id:必须是 multipartResolver-->
+    <!--<bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize" value="#{1024*1024*80}"/>
+        <property name="defaultEncoding" value="utf-8"/>
+    </bean>-->
+</beans>

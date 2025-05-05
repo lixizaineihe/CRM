@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         id="dataservice" version="3.0">
+  <display-name>dataservice application</display-name>
+
+  <!--
+    <context-param> 标签用来定义全局参数，这些参数在整个 Web 应用中都可以用到，Web 应用启动时就会被加载
+    contextConfigLocation 这个参数告诉 Spring 的监听器去哪找 Spring 的主配置文件
+    Spring 的主配置文件的地址是 classpath:applicationContext.xml
+  -->
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath:applicationContext.xml</param-value>
+  </context-param>
+
+  <!--
+    ContextLoaderListener 是 Spring 提供的监听器，监听器的作用是
+    负责在 Web 应用启动和关闭的时候，对 Spring 容器做初始化或销毁的工作
+
+    监听器和 contextConfigLocation 参数配合使用用来创建 Spring 容器，具体流程是：
+          1、Web 应用启动，Tomcat 会自动根据 web.xml 里的配置，创建监听器
+          2、监听器读取 contextConfigLocation 的值，得到 Spring 的主配置文件的路径 classpath:applicationContext.xml
+          3、监听器创建一个 Spring 容器（也叫 ApplicationContext），并让它去自动加载 classpath:applicationContext.xml 这个配置文件
+          4、Spring 容器在启动时，就会把 applicationContext.xml 里配置的所有对象都初始化
+  -->
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+
+  <!--
+    使用 CharacterEncodingFilter 这个类创建名为 encodingFilter 的字符过滤器
+    初始化参数指定创建该过滤器时使用 UTF-8 这个字符编码
+  -->
+  <filter>
+    <filter-name>encodingFilter</filter-name>
+    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+    <init-param>
+      <param-name>encoding</param-name>
+      <param-value>UTF-8</param-value>
+    </init-param>
+  </filter>
+
+  <!--
+    让名为 encodingFilter 的过滤器，拦截所有的请求路径
+    这样就能保证所有请求都用 UTF-8 编码，防止乱码
+  -->
+  <filter-mapping>
+    <filter-name>encodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <!--
+    使用 DispatcherServlet 这个类创建名为 dispatcher 的 Servlet。DispatcherServlet 是 SpringMVC 中的前端控制器
+    初始化参数 contextConfigLocation 指定了使用 applicationContext-mvc.xml 来初始化前端控制器
+    load-on-startup 值为 1 意为启动服务器时就创建 dispatcher 这个 Servlet
+  -->
+  <servlet>
+    <servlet-name>dispatcher</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <init-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>classpath:applicationContext-mvc.xml</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <!-- 除了静态资源以外的请求都会被 dispatcher 这个 Servlet 拦截 -->
+  <servlet-mapping>
+    <servlet-name>dispatcher</servlet-name>
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+
+  <!-- 所有以 “.do” 结尾的请求都会被 dispatcher 这个 Servlet 拦截 -->
+  <servlet-mapping>
+    <servlet-name>dispatcher</servlet-name>
+    <url-pattern>*.do</url-pattern>
+  </servlet-mapping>
+
+  <!--
+    下面这一段一般来说会被写成这样：
+    <welcome-file-list>
+      <welcome-file>index.jsp</welcome-file>
+    </welcome-file-list>
+    表示当用户直接访问网站的根路径 http://localhost:8080/crm/ 时，显示 index.jsp 这个页面
+    这里没有用 index.jsp，而是用了 /，表示：
+    当用户访问网站根路径时，不跳转到具体的静态页面，而是让前端控制器来处理这个请求
+  -->
+  <welcome-file-list>
+    <welcome-file>/</welcome-file>
+  </welcome-file-list>
+
+</web-app>
